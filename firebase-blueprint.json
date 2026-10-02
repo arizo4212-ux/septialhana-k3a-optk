@@ -1,0 +1,191 @@
+{
+  "entities": {
+    "vessel": {
+      "title": "Vessel",
+      "description": "Master data kapal kontainer yang beroperasi di terminal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "callSign": { "type": "string", "maxLength": 20 },
+        "imoNumber": { "type": "string", "maxLength": 20 },
+        "flag": { "type": "string", "maxLength": 50 },
+        "capacityTeu": { "type": "number" },
+        "loaMeters": { "type": "number" },
+        "shippingLine": { "type": "string", "maxLength": 50 },
+        "status": { "type": "string", "enum": ["Active", "In Maintenance", "Retired"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["name", "imoNumber", "capacityTeu", "shippingLine"]
+    },
+    "berth": {
+      "title": "Berth",
+      "description": "Master data dermaga tambat kapal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string", "maxLength": 20 },
+        "name": { "type": "string", "maxLength": 100 },
+        "lengthMeters": { "type": "number" },
+        "maxDraftMeters": { "type": "number" },
+        "cranes": { "type": "string", "maxLength": 200 },
+        "status": { "type": "string", "enum": ["Available", "Occupied", "Maintenance"] },
+        "currentVesselName": { "type": "string", "maxLength": 100 }
+      },
+      "required": ["code", "name", "lengthMeters", "status"]
+    },
+    "equipment": {
+      "title": "Equipment",
+      "description": "Alat berat operasional terminal (STS, RTG, Reach Stacker, Head Truck)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string", "maxLength": 20 },
+        "name": { "type": "string", "maxLength": 100 },
+        "type": { "type": "string", "enum": ["STS Crane", "RTG Crane", "Reach Stacker", "Head Truck"] },
+        "status": { "type": "string", "enum": ["Operational", "Standby", "Maintenance", "Breakdown"] },
+        "operatorName": { "type": "string", "maxLength": 100 },
+        "totalMoves": { "type": "number" }
+      },
+      "required": ["code", "name", "type", "status"]
+    },
+    "vesselCall": {
+      "title": "VesselCall",
+      "description": "Kunjungan dan jadwal sandar kapal (Berthing Schedule)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "vesselId": { "type": "string" },
+        "vesselName": { "type": "string", "maxLength": 100 },
+        "voyageIn": { "type": "string", "maxLength": 30 },
+        "voyageOut": { "type": "string", "maxLength": 30 },
+        "berthCode": { "type": "string", "maxLength": 20 },
+        "eta": { "type": "string" },
+        "etd": { "type": "string" },
+        "ata": { "type": "string" },
+        "atd": { "type": "string" },
+        "status": { "type": "string", "enum": ["Scheduled", "Anchorage", "At Berth", "Working", "Completed", "Departed"] },
+        "targetDischarge": { "type": "number" },
+        "completedDischarge": { "type": "number" },
+        "targetLoad": { "type": "number" },
+        "completedLoad": { "type": "number" },
+        "assignedCranes": { "type": "string", "maxLength": 100 },
+        "grossCraneRate": { "type": "number" }
+      },
+      "required": ["vesselName", "voyageIn", "berthCode", "eta", "status"]
+    },
+    "container": {
+      "title": "Container",
+      "description": "Data inventaris peti kemas dan posisinya di terminal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "containerNo": { "type": "string", "maxLength": 20 },
+        "size": { "type": "string", "enum": ["20ft", "40ft", "45ft"] },
+        "type": { "type": "string", "enum": ["Dry", "Reefer", "Hazmat/DG", "Tank", "Open Top", "Flat Rack"] },
+        "status": { "type": "string", "enum": ["Inbound-Vessel", "In-Yard", "Outbound-Vessel", "Gated-Out", "Under-Inspection"] },
+        "yardBlock": { "type": "string", "maxLength": 10 },
+        "yardBay": { "type": "string", "maxLength": 10 },
+        "yardRow": { "type": "string", "maxLength": 10 },
+        "yardTier": { "type": "string", "maxLength": 10 },
+        "grossWeightKg": { "type": "number" },
+        "sealNo": { "type": "string", "maxLength": 30 },
+        "shippingLine": { "type": "string", "maxLength": 50 },
+        "vesselCallId": { "type": "string" },
+        "vesselName": { "type": "string", "maxLength": 100 },
+        "temperatureCelsius": { "type": "number" },
+        "dwellDays": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["containerNo", "size", "type", "status", "shippingLine"]
+    },
+    "containerMove": {
+      "title": "ContainerMove",
+      "description": "Histori dan jejak pelacakan setiap pergerakan kontainer",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "containerNo": { "type": "string", "maxLength": 20 },
+        "moveType": { "type": "string", "enum": ["Discharge", "Load", "Yard-Shifting", "Gate-In", "Gate-Out", "Inspection"] },
+        "fromLocation": { "type": "string", "maxLength": 100 },
+        "toLocation": { "type": "string", "maxLength": 100 },
+        "equipmentCode": { "type": "string", "maxLength": 50 },
+        "operatorName": { "type": "string", "maxLength": 100 },
+        "timestamp": { "type": "string" },
+        "notes": { "type": "string", "maxLength": 255 }
+      },
+      "required": ["containerNo", "moveType", "fromLocation", "toLocation", "timestamp"]
+    },
+    "gateRecord": {
+      "title": "GateRecord",
+      "description": "Transaksi tiket Gate In dan Gate Out truk terminal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ticketNo": { "type": "string", "maxLength": 30 },
+        "containerNo": { "type": "string", "maxLength": 20 },
+        "truckPlate": { "type": "string", "maxLength": 20 },
+        "driverName": { "type": "string", "maxLength": 100 },
+        "direction": { "type": "string", "enum": ["Gate-In", "Gate-Out"] },
+        "deliveryOrderNo": { "type": "string", "maxLength": 50 },
+        "sealStatus": { "type": "string", "enum": ["Intact", "Broken", "Missing", "Replaced"] },
+        "physicalCondition": { "type": "string", "enum": ["Good", "Minor Damage", "Severe Damage"] },
+        "gatePassStatus": { "type": "string", "enum": ["Approved", "Pending Inspection", "Rejected"] },
+        "turnaroundMinutes": { "type": "number" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["ticketNo", "containerNo", "truckPlate", "driverName", "direction"]
+    },
+    "notification": {
+      "title": "Notification",
+      "description": "Notifikasi otomatis aktivitas operasional terminal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "maxLength": 100 },
+        "message": { "type": "string", "maxLength": 255 },
+        "category": { "type": "string", "enum": ["Vessel", "Crane", "Gate", "Yard", "Alert"] },
+        "severity": { "type": "string", "enum": ["info", "success", "warning", "critical"] },
+        "timestamp": { "type": "string" },
+        "read": { "type": "boolean" }
+      },
+      "required": ["title", "message", "category", "severity", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/vessels/{vesselId}": {
+      "schema": "vessel",
+      "description": "Koleksi data master kapal"
+    },
+    "/berths/{berthId}": {
+      "schema": "berth",
+      "description": "Koleksi data master dermaga"
+    },
+    "/equipment/{equipmentId}": {
+      "schema": "equipment",
+      "description": "Koleksi data master alat berat operasional"
+    },
+    "/vesselCalls/{vesselCallId}": {
+      "schema": "vesselCall",
+      "description": "Koleksi jadwal dan kunjungan kapal"
+    },
+    "/containers/{containerId}": {
+      "schema": "container",
+      "description": "Koleksi inventaris peti kemas di terminal"
+    },
+    "/containerMoves/{moveId}": {
+      "schema": "containerMove",
+      "description": "Koleksi histori pelacakan pergerakan kontainer"
+    },
+    "/gateRecords/{gateRecordId}": {
+      "schema": "gateRecord",
+      "description": "Koleksi transaksi gate in dan gate out"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "notification",
+      "description": "Koleksi notifikasi operasional sistem real-time"
+    }
+  }
+}

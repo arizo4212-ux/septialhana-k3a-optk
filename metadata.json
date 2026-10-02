@@ -1,0 +1,6 @@
+{
+  "name": "PortOS - Terminal Peti Kemas Online",
+  "description": "Sistem Operasi Terminal Peti Kemas (Container Terminal Operating System) terhubung real-time database dengan pemantauan kapal, master data, manajemen yard, operasi bongkar muat, gate in/out, dan analitik performa.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Test connection document
+    match /test/{docId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // Master Vessels
+    match /vessels/{vesselId} {
+      allow read: if isSignedIn() || true;
+      allow write: if isSignedIn() && isValidId(vesselId);
+    }
+
+    // Master Berths
+    match /berths/{berthId} {
+      allow read: if isSignedIn() || true;
+      allow write: if isSignedIn() && isValidId(berthId);
+    }
+
+    // Master Equipment
+    match /equipment/{equipmentId} {
+      allow read: if isSignedIn() || true;
+      allow write: if isSignedIn() && isValidId(equipmentId);
+    }
+
+    // Vessel Calls / Schedules
+    match /vesselCalls/{vesselCallId} {
+      allow read: if isSignedIn() || true;
+      allow write: if isSignedIn() && isValidId(vesselCallId);
+    }
+
+    // Containers
+    match /containers/{containerId} {
+      allow read: if isSignedIn() || true;
+      allow write: if isSignedIn() && isValidId(containerId);
+    }
+
+    // Container Moves (Tracking History)
+    match /containerMoves/{moveId} {
+      allow read: if isSignedIn() || true;
+      allow write: if isSignedIn() && isValidId(moveId);
+    }
+
+    // Gate In / Gate Out records
+    match /gateRecords/{gateRecordId} {
+      allow read: if isSignedIn() || true;
+      allow write: if isSignedIn() && isValidId(gateRecordId);
+    }
+
+    // Operational Notifications
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() || true;
+      allow write: if isSignedIn() && isValidId(notificationId);
+    }
+  }
+}
