@@ -1,72 +1,35 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-    }
-
-    // Default deny
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    // Test connection document
     match /test/{docId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+      allow read, write: if true;
     }
-
-    // Master Vessels
     match /vessels/{vesselId} {
-      allow read: if isSignedIn() || true;
-      allow write: if isSignedIn() && isValidId(vesselId);
+      allow read, write: if true;
     }
-
-    // Master Berths
     match /berths/{berthId} {
-      allow read: if isSignedIn() || true;
-      allow write: if isSignedIn() && isValidId(berthId);
+      allow read, write: if true;
     }
-
-    // Master Equipment
     match /equipment/{equipmentId} {
-      allow read: if isSignedIn() || true;
-      allow write: if isSignedIn() && isValidId(equipmentId);
+      allow read, write: if true;
     }
-
-    // Vessel Calls / Schedules
     match /vesselCalls/{vesselCallId} {
-      allow read: if isSignedIn() || true;
-      allow write: if isSignedIn() && isValidId(vesselCallId);
+      allow read, write: if true;
     }
-
-    // Containers
     match /containers/{containerId} {
-      allow read: if isSignedIn() || true;
-      allow write: if isSignedIn() && isValidId(containerId);
+      allow read, write: if true;
     }
-
-    // Container Moves (Tracking History)
     match /containerMoves/{moveId} {
-      allow read: if isSignedIn() || true;
-      allow write: if isSignedIn() && isValidId(moveId);
+      allow read, write: if true;
     }
-
-    // Gate In / Gate Out records
     match /gateRecords/{gateRecordId} {
-      allow read: if isSignedIn() || true;
-      allow write: if isSignedIn() && isValidId(gateRecordId);
+      allow read, write: if true;
     }
-
-    // Operational Notifications
     match /notifications/{notificationId} {
-      allow read: if isSignedIn() || true;
-      allow write: if isSignedIn() && isValidId(notificationId);
+      allow read, write: if true;
+    }
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }

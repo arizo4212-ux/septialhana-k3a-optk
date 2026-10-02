@@ -83,6 +83,7 @@ export const ContainersManager: React.FC<ContainersManagerProps> = ({
         },
         operatorName
       );
+      alert(`Peti kemas "${editingContainer.containerNo.toUpperCase()}" berhasil disimpan ke database!`);
       setEditingContainer(null);
     } catch (err: any) {
       alert('Gagal menyimpan peti kemas: ' + err.message);
@@ -95,6 +96,7 @@ export const ContainersManager: React.FC<ContainersManagerProps> = ({
     if (confirm(`Hapus peti kemas ${container.containerNo}? Aksi ini akan menghapus data dari Firestore.`)) {
       try {
         await deleteContainer(container.id);
+        alert(`Peti kemas "${container.containerNo}" berhasil dihapus.`);
       } catch (err: any) {
         alert('Gagal menghapus: ' + err.message);
       }

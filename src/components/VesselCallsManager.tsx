@@ -65,6 +65,7 @@ export const VesselCallsManager: React.FC<VesselCallsManagerProps> = ({
         grossCraneRate: Number(editingCall.grossCraneRate) || 28.0,
         id: editingCall.id,
       });
+      alert(`Jadwal kapal "${editingCall.vesselName}" (${editingCall.voyageIn}) berhasil disimpan ke database!`);
       setEditingCall(null);
     } catch (err: any) {
       alert('Gagal menyimpan jadwal kapal: ' + err.message);
@@ -77,6 +78,7 @@ export const VesselCallsManager: React.FC<VesselCallsManagerProps> = ({
     if (confirm(`Hapus kunjungan kapal ${call.vesselName} (${call.voyageIn})?`)) {
       try {
         await deleteVesselCall(call.id);
+        alert(`Jadwal kapal "${call.vesselName}" berhasil dihapus.`);
       } catch (err: any) {
         alert('Gagal menghapus: ' + err.message);
       }

@@ -61,6 +61,7 @@ export const MasterDataManager: React.FC<MasterDataManagerProps> = ({
         status: editingVessel.status || 'Active',
         id: editingVessel.id,
       });
+      alert(`Master kapal "${editingVessel.name}" berhasil disimpan ke database!`);
       setEditingVessel(null);
     } catch (err: any) {
       alert('Gagal menyimpan kapal: ' + err.message);
@@ -73,6 +74,7 @@ export const MasterDataManager: React.FC<MasterDataManagerProps> = ({
     if (confirm(`Yakin ingin menghapus master kapal "${vessel.name}"?`)) {
       try {
         await deleteVessel(vessel.id);
+        alert(`Master kapal "${vessel.name}" berhasil dihapus.`);
       } catch (err: any) {
         alert('Gagal menghapus: ' + err.message);
       }
@@ -94,6 +96,7 @@ export const MasterDataManager: React.FC<MasterDataManagerProps> = ({
         status: editingBerth.status || 'Available',
         id: editingBerth.id,
       });
+      alert(`Dermaga "${editingBerth.code}" berhasil disimpan ke database!`);
       setEditingBerth(null);
     } catch (err: any) {
       alert('Gagal menyimpan dermaga: ' + err.message);
@@ -106,6 +109,7 @@ export const MasterDataManager: React.FC<MasterDataManagerProps> = ({
     if (confirm(`Hapus dermaga "${berth.code} - ${berth.name}"?`)) {
       try {
         await deleteBerth(berth.id);
+        alert(`Dermaga "${berth.code}" berhasil dihapus.`);
       } catch (err: any) {
         alert('Gagal menghapus: ' + err.message);
       }
@@ -127,6 +131,7 @@ export const MasterDataManager: React.FC<MasterDataManagerProps> = ({
         totalMoves: Number(editingEquipment.totalMoves) || 0,
         id: editingEquipment.id,
       });
+      alert(`Alat berat "${editingEquipment.code}" berhasil disimpan ke database!`);
       setEditingEquipment(null);
     } catch (err: any) {
       alert('Gagal menyimpan alat berat: ' + err.message);
@@ -139,6 +144,7 @@ export const MasterDataManager: React.FC<MasterDataManagerProps> = ({
     if (confirm(`Hapus alat berat "${eq.code}"?`)) {
       try {
         await deleteEquipment(eq.id);
+        alert(`Alat berat "${eq.code}" berhasil dihapus.`);
       } catch (err: any) {
         alert('Gagal menghapus: ' + err.message);
       }

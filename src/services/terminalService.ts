@@ -150,11 +150,12 @@ export function subscribeNotifications(callback: (notifications: AlertNotificati
 // CRUD: Vessels
 export async function saveVessel(vessel: Omit<Vessel, 'id'> & { id?: string }): Promise<string> {
   const path = 'vessels';
-  const id = vessel.id || `vessel_${Date.now()}`;
+  const id = vessel.id || `vessel_${vessel.imoNumber || Date.now()}`;
   try {
     const docRef = doc(db, path, id);
     await setDoc(docRef, {
       ...vessel,
+      id,
       updatedAt: new Date().toISOString(),
     }, { merge: true });
     return id;
@@ -175,10 +176,10 @@ export async function deleteVessel(id: string): Promise<void> {
 // CRUD: Berths
 export async function saveBerth(berth: Omit<Berth, 'id'> & { id?: string }): Promise<string> {
   const path = 'berths';
-  const id = berth.id || `berth_${berth.code.replace(/\s+/g, '_').toLowerCase()}`;
+  const id = berth.id || `berth_${(berth.code || 'B01').replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase()}`;
   try {
     const docRef = doc(db, path, id);
-    await setDoc(docRef, berth, { merge: true });
+    await setDoc(docRef, { ...berth, id }, { merge: true });
     return id;
   } catch (err) {
     handleFirestoreError(err, OperationType.WRITE, path);
@@ -197,10 +198,10 @@ export async function deleteBerth(id: string): Promise<void> {
 // CRUD: Equipment
 export async function saveEquipment(eq: Omit<Equipment, 'id'> & { id?: string }): Promise<string> {
   const path = 'equipment';
-  const id = eq.id || `eq_${eq.code.replace(/\s+/g, '_').toLowerCase()}`;
+  const id = eq.id || `eq_${(eq.code || 'EQ01').replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase()}`;
   try {
     const docRef = doc(db, path, id);
-    await setDoc(docRef, eq, { merge: true });
+    await setDoc(docRef, { ...eq, id }, { merge: true });
     return id;
   } catch (err) {
     handleFirestoreError(err, OperationType.WRITE, path);
@@ -219,20 +220,25 @@ export async function deleteEquipment(id: string): Promise<void> {
 // CRUD: VesselCalls
 export async function saveVesselCall(call: Omit<VesselCall, 'id'> & { id?: string }): Promise<string> {
   const path = 'vesselCalls';
-  const id = call.id || `call_${Date.now()}`;
+  const id = call.id || `call_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
   try {
     const docRef = doc(db, path, id);
-    await setDoc(docRef, call, { merge: true });
+    await setDoc(docRef, { ...call, id }, { merge: true });
     
-    // Also add auto-notification
-    await addNotification({
-      title: `Jadwal Kapal Diperbarui`,
-      message: `${call.vesselName} (${call.voyageIn}) di ${call.berthCode} status: ${call.status}`,
-      category: 'Vessel',
-      severity: call.status === 'At Berth' || call.status === 'Working' ? 'info' : 'success',
-      timestamp: new Date().toISOString(),
-      read: false,
-    });
+    // Also add auto-notification safely
+    try {
+      await addNotification({
+        title: `Jadwal Kapal Diperbarui`,
+        message: `${call.vesselName} (${call.voyageIn}) di ${call.berthCode} status: ${call.status}`,
+        category: 'Vessel',
+        severity: call.status === 'At Berth' || call.status === 'Working' ? 'info' : 'success',
+        timestamp: new Date().toISOString(),
+        read: false,
+      });
+    } catch (notifErr) {
+      console.warn('Auto notification skipped:', notifErr);
+    }
+
     return id;
   } catch (err) {
     handleFirestoreError(err, OperationType.WRITE, path);
@@ -257,21 +263,26 @@ export async function saveContainer(cntr: Omit<Container, 'id'> & { id?: string 
     const docRef = doc(db, path, cleanId);
     await setDoc(docRef, {
       ...cntr,
+      id: cleanId,
       updatedAt: now,
       createdAt: cntr.createdAt || now,
     }, { merge: true });
 
-    // Record automatic move in history tracking
-    await recordContainerMove({
-      containerNo: cntr.containerNo,
-      moveType: cntr.status === 'Inbound-Vessel' ? 'Discharge' : cntr.status === 'Gated-Out' ? 'Gate-Out' : 'Yard-Shifting',
-      fromLocation: 'System / Input',
-      toLocation: `${cntr.yardBlock}-${cntr.yardBay}-${cntr.yardRow}-${cntr.yardTier}`,
-      equipmentCode: 'TOS-Dispatch',
-      operatorName,
-      timestamp: now,
-      notes: `Update status: ${cntr.status} (${cntr.type} ${cntr.size})`,
-    });
+    // Record automatic move in history tracking safely
+    try {
+      await recordContainerMove({
+        containerNo: cntr.containerNo,
+        moveType: cntr.status === 'Inbound-Vessel' ? 'Discharge' : cntr.status === 'Gated-Out' ? 'Gate-Out' : 'Yard-Shifting',
+        fromLocation: 'System / Input',
+        toLocation: `${cntr.yardBlock}-${cntr.yardBay}-${cntr.yardRow}-${cntr.yardTier}`,
+        equipmentCode: 'TOS-Dispatch',
+        operatorName,
+        timestamp: now,
+        notes: `Update status: ${cntr.status} (${cntr.type} ${cntr.size})`,
+      });
+    } catch (moveErr) {
+      console.warn('Container move logging note:', moveErr);
+    }
 
     return cleanId;
   } catch (err) {
@@ -294,7 +305,7 @@ export async function recordContainerMove(move: Omit<ContainerMove, 'id'>): Prom
   const id = `move_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
   try {
     const docRef = doc(db, path, id);
-    await setDoc(docRef, move);
+    await setDoc(docRef, { ...move, id });
     return id;
   } catch (err) {
     handleFirestoreError(err, OperationType.WRITE, path);
@@ -304,20 +315,24 @@ export async function recordContainerMove(move: Omit<ContainerMove, 'id'>): Prom
 // Gate Records
 export async function saveGateRecord(record: Omit<GateRecord, 'id'> & { id?: string }): Promise<string> {
   const path = 'gateRecords';
-  const id = record.id || `gate_${Date.now()}`;
+  const id = record.id || `gate_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
   try {
     const docRef = doc(db, path, id);
-    await setDoc(docRef, record, { merge: true });
+    await setDoc(docRef, { ...record, id }, { merge: true });
 
-    // Notification for gate activity
-    await addNotification({
-      title: `${record.direction}: ${record.truckPlate}`,
-      message: `Kontainer ${record.containerNo} oleh ${record.driverName} - Status Fisik: ${record.physicalCondition}`,
-      category: 'Gate',
-      severity: record.physicalCondition === 'Severe Damage' ? 'critical' : record.physicalCondition === 'Minor Damage' ? 'warning' : 'success',
-      timestamp: new Date().toISOString(),
-      read: false,
-    });
+    // Notification for gate activity safely
+    try {
+      await addNotification({
+        title: `${record.direction}: ${record.truckPlate}`,
+        message: `Kontainer ${record.containerNo} oleh ${record.driverName} - Status Fisik: ${record.physicalCondition}`,
+        category: 'Gate',
+        severity: record.physicalCondition === 'Severe Damage' ? 'critical' : record.physicalCondition === 'Minor Damage' ? 'warning' : 'success',
+        timestamp: new Date().toISOString(),
+        read: false,
+      });
+    } catch (notifErr) {
+      console.warn('Gate notification skipped:', notifErr);
+    }
 
     return id;
   } catch (err) {
